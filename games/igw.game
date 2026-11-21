@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!--
+ Iron Grip: Warlord (Isotx, 2012), an id Tech 3 derived game.
+-->
+<game
+  type="igw"
+  index="1"
+  name="Iron Grip: Warlord"
+  enginepath_win32="C:/Games/Iron Grip Warlord/"
+  enginepath_linux="~/.wine/drive_c/Games/Iron Grip Warlord/"
+  enginepath_macos="~/Library/Application Support/Games/Iron Grip Warlord/"
+  engine_win32="igwarlord.exe"
+  engine_linux="igwarlord.exe"
+  engine_macos="igwarlord.exe"
+  basegame="base"
+  basegamename="Iron Grip: Warlord"
+  unknowngamename="Custom Iron Grip: Warlord modification"
+  shaderpath="scripts"
+  archivetypes="pk3"
+  texturetypes="dds tga jpg"
+  modeltypes="md3 md5mesh ase obj"
+  maptypes="mapq3"
+  soundtypes="wav ogg"
+  shaders="quake3"
+  entityclass="quake3"
+  entityclasstype="xml"
+  entities="quake3"
+  brushtypes="quake3"
+  patchtypes="quake3"
+  q3map2_type="quake3"
+/>

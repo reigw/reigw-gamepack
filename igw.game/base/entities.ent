@@ -1,0 +1,724 @@
+<?xml version="1.0"?>
+<!--
+ Iron Grip: Warlord entity definitions for GtkRadiant / NetRadiant.
+
+ Based on id's Quake III Arena entities.ent (Q3Map2 keys by ydnar), which
+ Isotx shipped unchanged in resources.pk3 (scripts/entities.ent). Rewritten
+ from the game's own spawn table (gamex86 spawns[] and bg_itemlist) and the
+ stock maps: classes the game does not spawn (id's ammo, powerups, weapons,
+ shooters and CTF flags) are gone, Iron Grip's are added.
+
+ Keys every entity takes (G_SpawnGEntityFromSpawnVars):
+   notsingle, notteam, notfree  1: not spawned in that kind of game type
+   gametype                     space separated list of the game type names
+                                ("ffa", "single", "team", ...) it spawns in
+-->
+<classes>
+<!--
+=============================================================================
+
+ Compiler entities (Q3Map2)
+
+=============================================================================
+-->
+
+<group name="_decal" color="0 1.0 0">
+Compiler only. One or more patch meshes projected as a decal onto the world along the line from this entity's center to its target.
+-------- KEYS --------
+<target key="target" name="Target">info_null giving the direction and distance of the projection.</target>
+</group>
+
+<point name="_skybox" color="0.77 0.88 1.0" box="-4 -4 -4 4 4 4">
+Origin of a skybox: a separate, sealed part of the map that is drawn, scaled up, wherever sky is visible. Q3Map2 builds it, and the cgame reads this entity's origin and _scale at map load (CG_GetSkyBoxData). Every stock map has one.
+-------- KEYS --------
+<real key="_scale" name="Scale">how much larger the skybox is drawn (Q3Map2 default 64; the stock maps use 4 to 8).</real>
+<angle key="angle" name="Yaw Angle">rotation of the skybox.</angle>
+<angles key="angles" name="Pitch Yaw Roll">rotation of the skybox (default 0 0 0).</angles>
+</point>
+
+<group name="func_group" color="0 .4 1">
+Groups brushes for editing; compiled into the world. Q3Map2 terrain and lightmap keys apply.
+-------- KEYS --------
+<real key="_lightmapscale" name="Lightmap Scale">lightmap resolution factor for these brushes (default 1.0).</real>
+<boolean key="_castshadows" name="Cast Shadows">0 stops these brushes casting shadows.</boolean>
+<boolean key="_receiveshadows" name="Receive Shadows">0 stops these brushes receiving shadows.</boolean>
+</group>
+
+<point name="light" color="0 1 0" box="-8 -8 -8 8 8 8">
+Compiler only: a point light, or a spotlight when it has a target.
+-------- KEYS --------
+<real key="light" name="Intensity">intensity (default 300).</real>
+<color key="_color" name="Color">weighted RGB colour (default 1 1 1).</color>
+<target key="target" name="Target">info_null to aim a spotlight at.</target>
+<real key="radius" name="Spot Radius">radius of the spot cone at the target (default 64).</real>
+-------- SPAWNFLAGS --------
+<flag key="LINEAR" name="Linear Falloff" bit="0">linear instead of inverse square falloff.</flag>
+</point>
+
+<point name="misc_model" color="1 .5 .25" box="-16 -16 -16 16 16 16">
+Compiler only: a model (md3, ase, obj) baked into the map's geometry.
+-------- KEYS --------
+<model key="model" name="Model File">path of the model.</model>
+<angle key="angle" name="Yaw Angle">rotation of the model.</angle>
+<angles key="angles" name="Pitch Yaw Roll">rotation of the model (default 0 0 0).</angles>
+<real key="modelscale" name="Scale">uniform scale (default 1.0).</real>
+<real3 key="modelscale_vec" name="Scale XYZ">scale on each axis.</real3>
+<string key="_remap" name="Remap Shader">"old;new" replaces a shader of the model.</string>
+<integer key="spawnflags" name="Spawnflags">Q3Map2 clipping and lightmap flags.</integer>
+</point>
+
+<!--
+=============================================================================
+
+ worldspawn
+
+=============================================================================
+-->
+
+<!-- TODO: check in the renderer what wfogstart and wfogend do (start and end distance of a linear fog is a guess from the names). -->
+<group name="worldspawn" color="0 0 0">
+The world; exactly one, the map's first entity.
+-------- KEYS --------
+<string key="message" name="Message">map name and author shown while loading.</string>
+<sound key="music" name="Music">music file ("intro loop" for two files).</sound>
+<real key="gravity" name="Gravity">sets g_gravity (default 800).</real>
+<boolean key="enableDust" name="Dust">sets g_enableDust (default 0).</boolean>
+<boolean key="enableBreath" name="Breath">sets g_enableBreath (default 0).</boolean>
+<boolean key="wfog" name="World Fog">1 turns on the world fog. Sent to the clients with wfogstart, wfogend, wfogdensity and wfogcolour; missing keys are 0.</boolean>
+<real key="wfogstart" name="Fog Start">fog start distance.</real>
+<real key="wfogend" name="Fog End">fog end distance.</real>
+<real key="wfogdensity" name="Fog Density">fog density (the stock maps use 0.0001 to 0.0004).</real>
+<string key="wfogcolour" name="Fog Colour">"r g b a", 0 to 1 each. With fewer than four numbers the cgame turns wfog off; the stock maps give three.</string>
+<color key="_color" name="Ambient Colour">Q3Map2: colour of _ambient.</color>
+<real key="_ambient" name="Ambient">Q3Map2: ambient light added everywhere.</real>
+<real key="_blocksize" name="Block Size">Q3Map2: BSP splitting block size (default 1024).</real>
+<real3 key="gridsize" name="Grid Size">Q3Map2: light grid spacing (default 64 64 128).</real3>
+</group>
+
+<!--
+=============================================================================
+
+ Iron Grip: Warlord
+
+=============================================================================
+-->
+
+<point name="ig_info_stronghold" color="0 0 1" box="-512 -512 -512 512 512 512" model="models/strongholds/basic.md3">
+A stronghold, the main goal, drawn with models/strongholds/basic.md3 and clipped with its collision.md3. Players spawn at the ig_player entities that target it. Three at most; a fourth is removed. Every stock map has one or two, all team "1" with START_ENABLED.
+-------- KEYS --------
+<targetname key="targetname" name="Target Name">name the ig_player entities target.</targetname>
+<target key="target" name="Target">names its parking places (info_camp) and the ig_info_waypoint where its routes start.</target>
+<string key="team" name="Team">"1" or "2" (with START_ENABLED): the side holding it; otherwise nobody holds it.</string>
+<angle key="angle" name="Yaw Angle">facing of the model.</angle>
+-------- SPAWNFLAGS --------
+<flag key="START_ENABLED" name="Start Enabled" bit="0">held by its team from the start.</flag>
+</point>
+
+<point name="ig_player" color="1 0 1" box="-16 -16 -24 16 16 32">
+Player spawn point of a stronghold. At most 16 per stronghold; one with no stronghold prints "found ig_player with no stronghold".
+-------- KEYS --------
+<target key="target" name="Target">targetname of its ig_info_stronghold.</target>
+<angle key="angle" name="Yaw Angle">direction the player faces on spawning.</angle>
+</point>
+
+<point name="ig_info_player_rtscamera" color="0 0 1" box="-8 -8 -8 8 8 8">
+Start of the overhead (RTS) camera; its height is the camera's. One per map; only its origin is used.
+</point>
+
+<point name="ig_info_waypoint" color=".3 .3 1" box="-16 -16 -16 16 16 16">
+Route node for the NPCs, dropped to the floor. A node a stronghold targets, or one without a targetname, starts a route, which follows target to targetname ("Found invalid AI route" when it breaks). Other nodes attach the info_camp entities they target. 120 at most.
+-------- KEYS --------
+<targetname key="targetname" name="Target Name">name the previous node or the stronghold targets.</targetname>
+<target key="target" name="Target">next node, or info_camp entities.</target>
+</point>
+
+<point name="ig_officer_hide" color="0 .5 0" box="-8 -8 -8 8 8 8">
+Hiding point for enemy officers: origin and facing, registered once the AAS is loaded, then removed. 50 at most; one in no AAS area is dropped.
+-------- KEYS --------
+<angle key="angle" name="Yaw Angle">facing at the point.</angle>
+</point>
+
+<point name="ig_confed_camp" color="0 .5 0" box="-8 -8 -8 8 8 8">
+Camping point for Confederate NPCs, registered like ig_officer_hide and tied to the officer hiding point nearest by travel time. 250 at most; one in no AAS area, or with no ig_officer_hide in reach, is dropped.
+-------- KEYS --------
+<angle key="angle" name="Yaw Angle">facing at the point.</angle>
+</point>
+
+<point name="ig_meat_shield" color="1 .5 0" box="-15 -15 -24 15 15 32">
+A civilian, dropped to the floor and killable. Not spawned in gametype 0 (free for all). Prints "ig_meat_shield startsolid at" when placed inside a solid.
+-------- KEYS --------
+<angle key="angle" name="Yaw Angle">facing.</angle>
+</point>
+
+<!-- TODO: find the effects ig_particle accepts beyond the stock maps' smoke2, fireMed and fireSmall (the cgame's particle effect names). -->
+<point name="ig_particle" color="1 .5 0" box="-8 -8 -8 8 8 8">
+A looping particle effect drawn by the cgame.
+-------- KEYS --------
+<string key="model" name="Effect">name of the particle effect; the stock maps use smoke2, fireMed and fireSmall.</string>
+</point>
+
+<point name="ig_zeppelin_point" color="1 .5 0" box="-16 -16 -16 16 16 16">
+A point of the zeppelin's flight; each stock map has four.
+-------- KEYS --------
+<targetname key="targetname" name="Point Number">"1" to "4", the point's index.</targetname>
+<angles key="angles" name="Pitch Yaw Roll">orientation.</angles>
+</point>
+
+<point name="ig_explosion_point" color="1 .5 0" box="-8 -8 -8 8 8 8">
+Background explosion. The server removes it; the cgame reads the first four in the map and every 0 to 350 ms plays an explosion sound and effect at one of them.
+</point>
+
+<point name="ig_info_entrypoint" color="0 0 1" box="-16 -16 -16 16 16 16">
+Spawned but unused by the game, and placed in no stock map.
+</point>
+
+<point name="ig_info_entrypoint_infantry" color="0 0 1" box="-16 -16 -16 16 16 16">
+Infantry entry point. Spawned, but nothing reads it, and no stock map places it.
+-------- KEYS --------
+<target key="target" name="Target">an entity, picked on the first think.</target>
+</point>
+
+<point name="ig_info_entrypoint_vehicle" color="0 0 1" box="-16 -16 -16 16 16 16">
+Vehicle entry point. Spawned, but nothing reads it, and no stock map places it.
+-------- KEYS --------
+<target key="target" name="Target">an entity, picked on the first think.</target>
+</point>
+
+<!--
+=============================================================================
+
+ Items
+
+ Food, jewels, dynamite, suicide devices, radios and rocket launchers are
+ pooled: none appears at map load. At round start up to sk_max_food,
+ sk_max_jewel, sk_max_dynamite, sk_max_suicide, sk_max_radio and
+ sk_max_rocket of each kind are put on random spots of that kind; the rest
+ are removed. A picked up item comes back on a random free spot of its kind.
+ The wave scripts (scripts/waves/*.xml) can override these limits.
+
+ Any item is kept out of the game by setting the cvar disable_<classname>
+ to 1. The other weapon_ classes of bg_itemlist (weapon_knife,
+ weapon_sword, weapon_lrifle, ...) spawn as pickups too, but have no
+ world model, so none is listed.
+
+ TODO: check what the cgame does with such a pickup (invisible, or an
+ error on registering its missing model).
+
+=============================================================================
+-->
+
+<point name="item_food" color=".3 .3 1" box="-20 -20 -15 20 20 15" model="models/effects/gibs/gib_head.md3">
+A food spot; can be burnt by fire.
+-------- KEYS --------
+<angle key="angle" name="Yaw Angle">facing.</angle>
+-------- SPAWNFLAGS --------
+<flag key="SUSPENDED" name="Suspended" bit="0">not dropped to the floor.</flag>
+</point>
+
+<point name="item_food_hot" color=".3 .3 1" box="-20 -20 -15 20 20 15" model="models/effects/gibs/gib_head.md3">
+Hot food. Pooled with item_food; placed in no stock map.
+-------- SPAWNFLAGS --------
+<flag key="SUSPENDED" name="Suspended" bit="0">not dropped to the floor.</flag>
+</point>
+
+<point name="item_jewel" color=".3 .3 1" box="-20 -20 -15 20 20 15" model="models/props/gravestone1.md3">
+A jewellery spot, worth sk_jewel_power money; comes back after sk_jewel_respawn seconds. Not spawned in gametype 0 (free for all).
+-------- KEYS --------
+<angle key="angle" name="Yaw Angle">facing.</angle>
+-------- SPAWNFLAGS --------
+<flag key="SUSPENDED" name="Suspended" bit="0">not dropped to the floor.</flag>
+</point>
+
+<point name="weapon_dynamite" color=".3 .3 1" box="-15 -15 -15 15 15 15" model="models/effects/dynamite_pickup.md3">
+A dynamite spot.
+-------- KEYS --------
+<angle key="angle" name="Yaw Angle">facing.</angle>
+-------- SPAWNFLAGS --------
+<flag key="SUSPENDED" name="Suspended" bit="0">not dropped to the floor.</flag>
+</point>
+
+<point name="weapon_suicide" color=".3 .3 1" box="-15 -15 -15 15 15 15" model="models/effects/suicide_pickup.md3">
+A suicide device spot.
+-------- KEYS --------
+<angle key="angle" name="Yaw Angle">facing.</angle>
+-------- SPAWNFLAGS --------
+<flag key="SUSPENDED" name="Suspended" bit="0">not dropped to the floor.</flag>
+</point>
+
+<point name="weapon_radio" color=".3 .3 1" box="-16 -16 -16 16 16 16" model="models/effects/radio.md3">
+A radio spot (Scorched Earth). The stock maps place none; their radio spots come from the wave scripts (radiospot), which are only read with the expansion (cl_expansionSE, sv_expansion).
+</point>
+
+<point name="weapon_rocketlauncher" color=".3 .3 1" box="-16 -16 -16 16 16 16" model="models/weapons/w_bazooka.md3">
+A rocket launcher spot (Scorched Earth). The stock maps place none; their spots come from the wave scripts (rocketspot), which are only read with the expansion.
+</point>
+
+<point name="weapon_minigun" color=".3 .3 1" box="-16 -16 -16 16 16 16" model="models/effects/minigun_pickup.md3">
+A minigun pickup, an ordinary item that is not pooled. Placed in no stock map.
+-------- KEYS --------
+<real key="wait" name="Respawn Delay">seconds before it respawns (-1: never).</real>
+<real key="random" name="Respawn Variance">random seconds added to or taken from wait.</real>
+-------- SPAWNFLAGS --------
+<flag key="SUSPENDED" name="Suspended" bit="0">not dropped to the floor.</flag>
+</point>
+
+<!-- TODO: check whether the pk3s ship id's models/powerups/ models the armour, health and holdable items below use. -->
+<point name="item_armor_shard" color=".3 .3 1" box="-16 -16 -16 16 16 16" model="models/powerups/armor/shard.md3">
+Id's armour shard. Iron Grip has no armour: it gives 5 health, up to twice the maximum. Placed in no stock map.
+-------- KEYS --------
+<real key="wait" name="Respawn Delay">seconds before it respawns (-1: never).</real>
+<real key="random" name="Respawn Variance">random seconds added to or taken from wait.</real>
+<integer key="count" name="Amount">health given instead of the item's own.</integer>
+-------- SPAWNFLAGS --------
+<flag key="SUSPENDED" name="Suspended" bit="0">not dropped to the floor.</flag>
+</point>
+
+<point name="item_armor_combat" color=".3 .3 1" box="-16 -16 -16 16 16 16" model="models/powerups/armor/armor_yel.md3">
+Id's combat armour. Iron Grip has no armour: it gives 50 health, up to the maximum. Placed in no stock map.
+-------- KEYS --------
+<real key="wait" name="Respawn Delay">seconds before it respawns (-1: never).</real>
+<real key="random" name="Respawn Variance">random seconds added to or taken from wait.</real>
+<integer key="count" name="Amount">health given instead of the item's own.</integer>
+-------- SPAWNFLAGS --------
+<flag key="SUSPENDED" name="Suspended" bit="0">not dropped to the floor.</flag>
+</point>
+
+<point name="item_armor_body" color=".3 .3 1" box="-16 -16 -16 16 16 16" model="models/powerups/armor/armor_red.md3">
+Id's heavy armour. Iron Grip has no armour: it gives 100 health, up to twice the maximum. Placed in no stock map.
+-------- KEYS --------
+<real key="wait" name="Respawn Delay">seconds before it respawns (-1: never).</real>
+<real key="random" name="Respawn Variance">random seconds added to or taken from wait.</real>
+<integer key="count" name="Amount">health given instead of the item's own.</integer>
+-------- SPAWNFLAGS --------
+<flag key="SUSPENDED" name="Suspended" bit="0">not dropped to the floor.</flag>
+</point>
+
+<point name="item_health_small" color=".3 .3 1" box="-16 -16 -16 16 16 16" model="models/powerups/health/small_cross.md3">
+5 health, up to twice the maximum. Placed in no stock map.
+-------- KEYS --------
+<real key="wait" name="Respawn Delay">seconds before it respawns (-1: never).</real>
+<real key="random" name="Respawn Variance">random seconds added to or taken from wait.</real>
+<integer key="count" name="Amount">health given instead of the item's own.</integer>
+-------- SPAWNFLAGS --------
+<flag key="SUSPENDED" name="Suspended" bit="0">not dropped to the floor.</flag>
+</point>
+
+<point name="item_health" color=".3 .3 1" box="-16 -16 -16 16 16 16" model="models/powerups/health/medium_cross.md3">
+25 health, up to the maximum. Placed in no stock map.
+-------- KEYS --------
+<real key="wait" name="Respawn Delay">seconds before it respawns (-1: never).</real>
+<real key="random" name="Respawn Variance">random seconds added to or taken from wait.</real>
+<integer key="count" name="Amount">health given instead of the item's own.</integer>
+-------- SPAWNFLAGS --------
+<flag key="SUSPENDED" name="Suspended" bit="0">not dropped to the floor.</flag>
+</point>
+
+<point name="item_health_large" color=".3 .3 1" box="-16 -16 -16 16 16 16" model="models/powerups/health/large_cross.md3">
+50 health, up to the maximum. Placed in no stock map.
+-------- KEYS --------
+<real key="wait" name="Respawn Delay">seconds before it respawns (-1: never).</real>
+<real key="random" name="Respawn Variance">random seconds added to or taken from wait.</real>
+<integer key="count" name="Amount">health given instead of the item's own.</integer>
+-------- SPAWNFLAGS --------
+<flag key="SUSPENDED" name="Suspended" bit="0">not dropped to the floor.</flag>
+</point>
+
+<point name="item_health_mega" color=".3 .3 1" box="-16 -16 -16 16 16 16" model="models/powerups/health/mega_cross.md3">
+100 health, up to twice the maximum; it respawns like the other health items. Placed in no stock map.
+-------- KEYS --------
+<real key="wait" name="Respawn Delay">seconds before it respawns (-1: never).</real>
+<real key="random" name="Respawn Variance">random seconds added to or taken from wait.</real>
+<integer key="count" name="Amount">health given instead of the item's own.</integer>
+-------- SPAWNFLAGS --------
+<flag key="SUSPENDED" name="Suspended" bit="0">not dropped to the floor.</flag>
+</point>
+
+<point name="holdable_teleporter" color=".3 .3 1" box="-16 -16 -16 16 16 16" model="models/powerups/holdable/teleporter.md3">
+Personal teleporter, held until used: it moves the player to a random info_player_deathmatch or info_player_start away from them. With neither in the map the server stops with "Couldn't find a spawn point"; the stock maps have neither. Placed in no stock map.
+-------- KEYS --------
+<real key="wait" name="Respawn Delay">seconds before it respawns (-1: never).</real>
+<real key="random" name="Respawn Variance">random seconds added to or taken from wait.</real>
+-------- SPAWNFLAGS --------
+<flag key="SUSPENDED" name="Suspended" bit="0">not dropped to the floor.</flag>
+</point>
+
+<point name="holdable_medkit" color=".3 .3 1" box="-16 -16 -16 16 16 16" model="models/powerups/holdable/medkit.md3">
+Medkit, held until used: it sets health to the maximum plus 25. Placed in no stock map.
+-------- KEYS --------
+<real key="wait" name="Respawn Delay">seconds before it respawns (-1: never).</real>
+<real key="random" name="Respawn Variance">random seconds added to or taken from wait.</real>
+-------- SPAWNFLAGS --------
+<flag key="SUSPENDED" name="Suspended" bit="0">not dropped to the floor.</flag>
+</point>
+
+<point name="item_botroam" color=".5 .3 .7" box="-8 -8 -8 8 8 8">
+Bot roaming goal; not spawned in the game, read by the bot library.
+-------- KEYS --------
+<real key="weight" name="Weight">attraction of the goal.</real>
+</point>
+
+<!--
+=============================================================================
+
+ id's entities kept in the spawn table
+
+ The stock maps use info_camp, info_null, info_player_intermission(_lose),
+ target_position, target_speaker, func_timer and trigger_hurt of these.
+
+=============================================================================
+-->
+
+<point name="info_camp" color="0 .5 0" box="-8 -8 -8 8 8 8">
+A parking place: an ig_info_stronghold or ig_info_waypoint lists the ones it targets. A stronghold needs one in an AAS area for its repair goal ("BotInitLevelGoals: no parking places").
+-------- KEYS --------
+<targetname key="targetname" name="Target Name">name the stronghold or waypoint targets.</targetname>
+<angle key="angle" name="Yaw Angle">facing.</angle>
+<real key="range" name="Range">units the bot may stray from it (the stock maps use 64 and 128).</real>
+<real key="weight" name="Weight">preference against the other camp spots.</real>
+</point>
+
+<point name="info_null" color="0 .5 0" box="-8 -8 -8 8 8 8">
+Positional target for compile-time entities (light, _decal); removed at map load.
+-------- KEYS --------
+<targetname key="targetname" name="Target Name">name the light targets.</targetname>
+</point>
+
+<point name="info_notnull" color="0 .5 0" box="-8 -8 -8 8 8 8">
+Positional target that stays in the game; target_position does the same.
+-------- KEYS --------
+<targetname key="targetname" name="Target Name">name the pointing entity targets.</targetname>
+</point>
+
+<point name="target_position" color="0 .5 0" box="-4 -4 -4 4 4 4">
+Positional target, for example to aim an intermission camera.
+-------- KEYS --------
+<targetname key="targetname" name="Target Name">name the pointing entity targets.</targetname>
+</point>
+
+<point name="info_player_intermission" color="1 0 1" box="-16 -16 -16 16 16 16">
+Camera for the end of a round that was won. One per map.
+-------- KEYS --------
+<angles key="angles" name="Pitch Yaw Roll">view angles (default 0 0 0).</angles>
+<target key="target" name="Target">info_notnull or target_position to look at instead.</target>
+</point>
+
+<point name="info_player_intermission_lose" color="1 0 1" box="-16 -16 -16 16 16 16">
+Camera for the end of a round that was lost; as info_player_intermission. One per map.
+-------- KEYS --------
+<angles key="angles" name="Pitch Yaw Roll">view angles (default 0 0 0).</angles>
+<target key="target" name="Target">info_notnull or target_position to look at instead.</target>
+</point>
+
+<point name="info_player_start" color="1 0 0" box="-16 -16 -24 16 16 32">
+id's player spawn point; Iron Grip spawns players at ig_player.
+-------- KEYS --------
+<angle key="angle" name="Yaw Angle">direction the player faces.</angle>
+</point>
+
+<point name="info_player_deathmatch" color="1 0 1" box="-16 -16 -24 16 16 32">
+id's player spawn point; Iron Grip spawns players at ig_player.
+-------- KEYS --------
+<angle key="angle" name="Yaw Angle">direction the player faces.</angle>
+<boolean key="nobots" name="No Bots">1: bots never spawn here.</boolean>
+<boolean key="nohumans" name="No Humans">1: humans never spawn here.</boolean>
+-------- SPAWNFLAGS --------
+<flag key="INITIAL" name="Initial" bit="0">preferred for the first spawn.</flag>
+</point>
+
+<point name="target_speaker" color="0 .7 .7" box="-8 -8 -8 8 8 8">
+Plays a sound when used, or loops it. The stock maps use it for their ambience.
+-------- KEYS --------
+<sound key="noise" name="Sound File">wav file to play.</sound>
+<real key="wait" name="Wait">seconds between automatic triggers (default 0: none).</real>
+<real key="random" name="Random">random seconds added to or taken from wait.</real>
+<targetname key="targetname" name="Target Name">name of the entity that triggers it.</targetname>
+-------- SPAWNFLAGS --------
+<flag key="LOOPED_ON" name="Looped On" bit="0">loops, on from the start.</flag>
+<flag key="LOOPED_OFF" name="Looped Off" bit="1">loops once triggered.</flag>
+<flag key="GLOBAL" name="Global" bit="2">heard everywhere at full volume.</flag>
+<flag key="ACTIVATOR" name="Activator" bit="3">played only to the activator.</flag>
+</point>
+
+<point name="func_timer" color="0 .5 .8" box="-8 -8 -8 8 8 8">
+Fires its targets every wait plus or minus random seconds while on; using it toggles it.
+-------- KEYS --------
+<real key="wait" name="Wait">seconds between firings (default 1).</real>
+<real key="random" name="Random">random seconds added to or taken from wait; must be below wait.</real>
+<target key="target" name="Target">entities to fire.</target>
+<targetname key="targetname" name="Target Name">name of the entity that toggles it.</targetname>
+-------- SPAWNFLAGS --------
+<flag key="START_ON" name="Start On" bit="0">on from the start.</flag>
+</point>
+
+<group name="trigger_hurt" color=".5 .5 .5">
+Hurts whatever touches it.
+-------- KEYS --------
+<integer key="dmg" name="Damage">damage per hit, every 100 ms (default 5).</integer>
+<targetname key="targetname" name="Target Name">name of the entity that toggles it.</targetname>
+-------- SPAWNFLAGS --------
+<flag key="START_OFF" name="Start Off" bit="0">off until used.</flag>
+<flag key="TOGGLE" name="Toggle" bit="1">can be toggled.</flag>
+<flag key="SILENT" name="Silent" bit="2">no hurt sound.</flag>
+<flag key="NO_PROTECTION" name="No Protection" bit="3">hurts players in god mode too.</flag>
+<flag key="SLOW" name="Slow" bit="4">hurts once a second instead.</flag>
+</group>
+
+<group name="trigger_multiple" color=".5 .5 .5">
+Fires its targets when touched by a player.
+-------- KEYS --------
+<real key="wait" name="Wait">seconds before it can fire again (default 0.5).</real>
+<real key="random" name="Random">random seconds added to or taken from wait.</real>
+<target key="target" name="Target">entities to fire.</target>
+-------- SPAWNFLAGS --------
+<flag key="RED_ONLY" name="Team 1 Only" bit="0">only players of team 1 fire it.</flag>
+<flag key="BLUE_ONLY" name="Team 2 Only" bit="1">only players of team 2 fire it.</flag>
+</group>
+
+<point name="trigger_always" color=".5 .5 .5" box="-8 -8 -8 8 8 8">
+Fires its targets once at map load.
+-------- KEYS --------
+<target key="target" name="Target">entities to fire.</target>
+</point>
+
+<group name="trigger_push" color=".5 .5 .5">
+Throws players onto the target_position or info_notnull it targets.
+-------- KEYS --------
+<target key="target" name="Target">where the push lands.</target>
+</group>
+
+<group name="trigger_teleport" color=".5 .5 .5">
+Teleports players to the misc_teleporter_dest it targets.
+-------- KEYS --------
+<target key="target" name="Target">destination.</target>
+-------- SPAWNFLAGS --------
+<flag key="SPECTATOR" name="Spectator Only" bit="0">only spectators are teleported.</flag>
+</group>
+
+<point name="misc_teleporter_dest" color="1 .5 .25" box="-32 -32 -24 32 32 -16">
+Teleport destination.
+-------- KEYS --------
+<targetname key="targetname" name="Target Name">name the teleporter targets.</targetname>
+<angle key="angle" name="Yaw Angle">direction the player faces on arriving.</angle>
+</point>
+
+<point name="target_teleporter" color="0 .5 0" box="-8 -8 -8 8 8 8">
+Teleports the activator to its target.
+-------- KEYS --------
+<target key="target" name="Target">misc_teleporter_dest.</target>
+<targetname key="targetname" name="Target Name">name of the activating entity's target.</targetname>
+</point>
+
+<point name="target_relay" color=".5 .5 .5" box="-8 -8 -8 8 8 8">
+Passes a trigger on to its targets.
+-------- KEYS --------
+<target key="target" name="Target">entities to fire.</target>
+<targetname key="targetname" name="Target Name">name of the activating entity's target.</targetname>
+-------- SPAWNFLAGS --------
+<flag key="RED_ONLY" name="Team 1 Only" bit="0">only for activators of team 1.</flag>
+<flag key="BLUE_ONLY" name="Team 2 Only" bit="1">only for activators of team 2.</flag>
+<flag key="RANDOM" name="Random" bit="2">fires one of its targets at random.</flag>
+</point>
+
+<point name="target_delay" color=".5 .5 .5" box="-8 -8 -8 8 8 8">
+Fires its targets after a delay.
+-------- KEYS --------
+<real key="wait" name="Delay">seconds (default 1).</real>
+<real key="random" name="Random">random seconds added to or taken from wait.</real>
+<target key="target" name="Target">entities to fire.</target>
+<targetname key="targetname" name="Target Name">name of the activating entity's target.</targetname>
+</point>
+
+<point name="target_print" color="0 .5 .5" box="-8 -8 -8 8 8 8">
+Prints a message on screen when used.
+-------- KEYS --------
+<string key="message" name="Message">text.</string>
+<targetname key="targetname" name="Target Name">name of the activating entity's target.</targetname>
+-------- SPAWNFLAGS --------
+<flag key="REDTEAM" name="Team 1" bit="0">only to team 1.</flag>
+<flag key="BLUETEAM" name="Team 2" bit="1">only to team 2.</flag>
+<flag key="PRIVATE" name="Private" bit="2">only to the activator.</flag>
+</point>
+
+<point name="target_kill" color=".5 .5 .5" box="-8 -8 -8 8 8 8">
+Kills the activator.
+-------- KEYS --------
+<targetname key="targetname" name="Target Name">name of the activating entity's target.</targetname>
+</point>
+
+<point name="target_push" color=".5 .5 .5" box="-8 -8 -8 8 8 8">
+Pushes the activator toward its target, or along its angles.
+-------- KEYS --------
+<real key="speed" name="Speed">push speed without a target (default 1000).</real>
+<angles key="angles" name="Pitch Yaw Roll">direction without a target.</angles>
+<target key="target" name="Target">where the push lands.</target>
+<targetname key="targetname" name="Target Name">name of the activating entity's target.</targetname>
+-------- SPAWNFLAGS --------
+<flag key="BOUNCEPAD" name="Bounce Pad" bit="0">plays the jump pad sound.</flag>
+</point>
+
+<point name="target_laser" color="0 .5 0" box="-8 -8 -8 8 8 8">
+A damaging laser beam toward its target, or along its angles.
+-------- KEYS --------
+<target key="target" name="Target">what to aim at.</target>
+<angles key="angles" name="Pitch Yaw Roll">direction without a target.</angles>
+<integer key="dmg" name="Damage">damage per frame (default 1).</integer>
+<targetname key="targetname" name="Target Name">name of the entity that toggles it.</targetname>
+-------- SPAWNFLAGS --------
+<flag key="START_ON" name="Start On" bit="0">on from the start.</flag>
+</point>
+
+<point name="target_location" color="0 .5 0" box="-8 -8 -8 8 8 8">
+Names the part of the map nearest to it for the team overlay.
+-------- KEYS --------
+<string key="message" name="Location">name of the place.</string>
+<integer key="count" name="Colour">colour index 0 to 7 (default 0: white).</integer>
+</point>
+
+<point name="target_give" color="0 .5 0" box="-8 -8 -8 8 8 8">
+Gives the activator the items it targets.
+-------- KEYS --------
+<target key="target" name="Target">items to give.</target>
+<targetname key="targetname" name="Target Name">name of the activating entity's target.</targetname>
+</point>
+
+<point name="target_remove_powerups" color="0 .5 0" box="-8 -8 -8 8 8 8">
+Clears the activator's powerups and, since it clears id's 16 slots where Iron Grip has 11, its first five ammo counts too.
+-------- KEYS --------
+<targetname key="targetname" name="Target Name">name of the activating entity's target.</targetname>
+</point>
+
+<point name="target_score" color="0 .5 0" box="-8 -8 -8 8 8 8">
+Adds to the activator's score.
+-------- KEYS --------
+<integer key="count" name="Points">points (default 1).</integer>
+<targetname key="targetname" name="Target Name">name of the activating entity's target.</targetname>
+</point>
+
+<point name="path_corner" color=".5 .3 0" box="-8 -8 -8 8 8 8">
+A stop of a func_train.
+-------- KEYS --------
+<targetname key="targetname" name="Target Name">name the train or the previous corner targets.</targetname>
+<target key="target" name="Target">next corner.</target>
+<real key="speed" name="Speed">train speed to the next corner.</real>
+<real key="wait" name="Wait">seconds the train stops here (-1: until used).</real>
+</point>
+
+<group name="func_static" color="0 .5 .8">
+A brush model that does not move.
+-------- KEYS --------
+<model key="model2" name="Model">an md3 drawn as well.</model>
+</group>
+
+<group name="func_door" color="0 .5 .8">
+A sliding door, opened by touch, by being used, or, with health, by being shot.
+-------- KEYS --------
+<angle key="angle" name="Direction">direction it opens in (-1 up, -2 down).</angle>
+<real key="speed" name="Speed">units a second (default 400).</real>
+<real key="wait" name="Wait">seconds open (default 2; -1 stays open).</real>
+<integer key="lip" name="Lip">units left showing when open (default 8).</integer>
+<integer key="dmg" name="Damage">damage to what blocks it (default 2).</integer>
+<integer key="health" name="Health">opens when shot this much.</integer>
+<string key="team" name="Team">doors with the same team move together.</string>
+<targetname key="targetname" name="Target Name">only opens when used.</targetname>
+-------- SPAWNFLAGS --------
+<flag key="START_OPEN" name="Start Open" bit="0">starts open, closes when used.</flag>
+<flag key="CRUSHER" name="Crusher" bit="2">keeps hurting what blocks it.</flag>
+</group>
+
+<group name="func_button" color="0 .5 .8">
+A button that fires its targets when pressed or shot.
+-------- KEYS --------
+<angle key="angle" name="Direction">direction it moves when pressed.</angle>
+<real key="speed" name="Speed">units a second (default 40).</real>
+<real key="wait" name="Wait">seconds before it returns (default 1; -1 never).</real>
+<integer key="lip" name="Lip">units left showing when pressed (default 4).</integer>
+<integer key="health" name="Health">pressed by shooting instead of touching.</integer>
+<target key="target" name="Target">entities to fire.</target>
+</group>
+
+<group name="func_plat" color="0 .5 .8">
+A platform that lowers when stood on and rises back.
+-------- KEYS --------
+<real key="speed" name="Speed">units a second (default 200).</real>
+<integer key="lip" name="Lip">units left above the floor when down (default 8).</integer>
+<integer key="height" name="Height">travel, overriding the height of the brush.</integer>
+<integer key="dmg" name="Damage">damage to what blocks it (default 2).</integer>
+<targetname key="targetname" name="Target Name">only moves when used.</targetname>
+</group>
+
+<group name="func_train" color="0 .5 .8">
+A brush model moving along path_corner entities; needs an origin brush.
+-------- KEYS --------
+<target key="target" name="Target">first path_corner.</target>
+<real key="speed" name="Speed">units a second (default 100).</real>
+<integer key="dmg" name="Damage">damage to what blocks it (default 2).</integer>
+<targetname key="targetname" name="Target Name">name of the entity that starts it.</targetname>
+-------- SPAWNFLAGS --------
+<flag key="START_ON" name="Start On" bit="0">moving from the start.</flag>
+<flag key="TOGGLE" name="Toggle" bit="1">stops and starts when used.</flag>
+<flag key="BLOCK_STOPS" name="Block Stops" bit="2">stops when blocked instead of hurting.</flag>
+</group>
+
+<group name="func_rotating" color="0 .5 .8">
+A brush model that keeps rotating; needs an origin brush.
+-------- KEYS --------
+<real key="speed" name="Speed">degrees a second (default 100).</real>
+<integer key="dmg" name="Damage">damage to what blocks it (default 2).</integer>
+-------- SPAWNFLAGS --------
+<flag key="START_ON" name="Start On" bit="0">unused; it always rotates.</flag>
+<flag key="X_AXIS" name="X Axis" bit="2">rotates about X instead of Z.</flag>
+<flag key="Y_AXIS" name="Y Axis" bit="3">rotates about Y instead of Z.</flag>
+</group>
+
+<group name="func_bobbing" color="0 .5 .8">
+A brush model moving back and forth.
+-------- KEYS --------
+<integer key="height" name="Height">amplitude (default 32).</integer>
+<real key="speed" name="Period">seconds per cycle (default 4).</real>
+<real key="phase" name="Phase">start of the cycle, 0 to 1.</real>
+<integer key="dmg" name="Damage">damage to what blocks it (default 2).</integer>
+-------- SPAWNFLAGS --------
+<flag key="X_AXIS" name="X Axis" bit="0">moves along X instead of Z.</flag>
+<flag key="Y_AXIS" name="Y Axis" bit="1">moves along Y instead of Z.</flag>
+</group>
+
+<group name="func_pendulum" color="0 .5 .8">
+A swinging brush model, rotating about its origin brush; the period follows from its length.
+-------- KEYS --------
+<real key="speed" name="Angle">degrees to each side (default 30).</real>
+<real key="phase" name="Phase">start of the cycle, 0 to 1.</real>
+<integer key="dmg" name="Damage">damage to what blocks it (default 2).</integer>
+</group>
+
+<point name="misc_portal_surface" color="0 0 1" box="-4 -4 -4 4 4 4">
+Marks a portal or mirror surface; targets its misc_portal_camera, or none for a mirror.
+-------- KEYS --------
+<target key="target" name="Target">misc_portal_camera.</target>
+</point>
+
+<point name="misc_portal_camera" color="0 0 1" box="-4 -4 -4 4 4 4">
+The view a misc_portal_surface shows.
+-------- KEYS --------
+<targetname key="targetname" name="Target Name">name the portal surface targets.</targetname>
+<target key="target" name="Target">entity to aim at.</target>
+<angles key="angles" name="Pitch Yaw Roll">view angles without a target.</angles>
+<integer key="roll" name="Roll">roll of the view.</integer>
+</point>
+
+<point name="team_CTF_redplayer" color="1 0 0" box="-16 -16 -16 16 16 32">
+id's CTF initial spawn point for team 1; Iron Grip spawns players at ig_player.
+</point>
+
+<point name="team_CTF_blueplayer" color="0 0 1" box="-16 -16 -16 16 16 32">
+id's CTF initial spawn point for team 2; Iron Grip spawns players at ig_player.
+</point>
+
+<point name="team_CTF_redspawn" color="1 0 0" box="-16 -16 -24 16 16 32">
+id's CTF respawn point for team 1; Iron Grip spawns players at ig_player.
+</point>
+
+<point name="team_CTF_bluespawn" color="0 0 1" box="-16 -16 -24 16 16 32">
+id's CTF respawn point for team 2; Iron Grip spawns players at ig_player.
+</point>
+
+</classes>

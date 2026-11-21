@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<!--
+build commands
+[RadiantPath]: path to Radiant .. C:\Program Files\NetRadiant
+[EnginePath]: path to the engine .. C:\Games\Iron Grip Warlord\
+
+ The stock maps were compiled by q3map2 2.5.17, so the compile steps are
+ Quake III's. But Iron Grip's BSPs are IBSP version 48 with 12 byte brush
+ sides (planeNum, shaderNum and a flag word), where stock q3map2's
+ "-game quake3" writes version 46 with 8 byte ones; the engine's
+ CM_LoadMap refuses any version but 48. Until q3map2 learns that format,
+ these commands are good for checking a map compiles and lights, not for
+ producing a BSP the game loads.
+
+ NPCs and bots also need the map's .aas (id's EAAS version 5, made by
+ bspc), which is not built here.
+-->
+<project version="2.0">
+<var name="q3map2">"[RadiantPath]q3map2.[ExecutableType]" -v<cond value="[MonitorAddress]"> -connect [MonitorAddress]</cond> -game quake3 -fs_basepath "[EnginePath]" -fs_basegame base<cond value="[GameName]"> -fs_game [GameName]</cond></var>
+<build name="Q3Map2: (single) BSP -meta">
+<command>[q3map2] -meta "[MapFile]"</command>
+</build>
+<build name="Q3Map2: (single) -vis">
+<command>[q3map2] -vis "[MapFile]"</command>
+</build>
+<build name="Q3Map2: (single test) -vis -fast">
+<command>[q3map2] -vis -fast "[MapFile]"</command>
+</build>
+<build name="Q3Map2: (single test) -light -fast">
+<command>[q3map2] -light -fast "[MapFile]"</command>
+</build>
+<build name="Q3Map2: (single) -light -fast -super 2 -filter">
+<command>[q3map2] -light -fast -super 2 -filter "[MapFile]"</command>
+</build>
+<build name="Q3Map2: (test) BSP -meta, -vis -fast, -light -fast -filter">
+<command>[q3map2] -meta "[MapFile]"</command>
+<command>[q3map2] -vis -saveprt -fast "[MapFile]"</command>
+<command>[q3map2] -light -fast -filter "[MapFile]"</command>
+</build>
+<build name="Q3Map2: (final) BSP -meta, -vis, -light -fast -filter -super 2">
+<command>[q3map2] -meta "[MapFile]"</command>
+<command>[q3map2] -vis -saveprt "[MapFile]"</command>
+<command>[q3map2] -light -fast -filter -super 2 "[MapFile]"</command>
+</build>
+<build name="Q3Map2: (final) BSP -meta, -vis, -light -fast -filter -super 2 -bounce 8">
+<command>[q3map2] -meta "[MapFile]"</command>
+<command>[q3map2] -vis -saveprt "[MapFile]"</command>
+<command>[q3map2] -light -fast -super 2 -filter -bounce 8 "[MapFile]"</command>
+</build>
+</project>
