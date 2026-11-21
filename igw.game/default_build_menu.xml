@@ -5,18 +5,15 @@ build commands
 [EnginePath]: path to the engine .. C:\Games\Iron Grip Warlord\
 
  The stock maps were compiled by q3map2 2.5.17, so the compile steps are
- Quake III's. But Iron Grip's BSPs are IBSP version 48 with 12 byte brush
- sides (planeNum, shaderNum and a flag word), where stock q3map2's
- "-game quake3" writes version 46 with 8 byte ones; the engine's
- CM_LoadMap refuses any version but 48. Until q3map2 learns that format,
- these commands are good for checking a map compiles and lights, not for
- producing a BSP the game loads.
+ Quake III's. Iron Grip's BSPs are IBSP version 48 with 12 byte brush
+ sides (planeNum, shaderNum and a flag word holding canbuild), which only
+ LuaDiant's q3map2 writes, as "-game igw".
 
  NPCs and bots also need the map's .aas (id's EAAS version 5, made by
  bspc), which is not built here.
 -->
 <project version="2.0">
-<var name="q3map2">"[RadiantPath]q3map2.[ExecutableType]" -v<cond value="[MonitorAddress]"> -connect [MonitorAddress]</cond> -game quake3 -fs_basepath "[EnginePath]" -fs_basegame base<cond value="[GameName]"> -fs_game [GameName]</cond></var>
+<var name="q3map2">"[RadiantPath]q3map2.[ExecutableType]" -v<cond value="[MonitorAddress]"> -connect [MonitorAddress]</cond> -game igw -fs_basepath "[EnginePath]" -fs_basegame base<cond value="[GameName]"> -fs_game [GameName]</cond></var>
 <build name="Q3Map2: (single) BSP -meta">
 <command>[q3map2] -meta "[MapFile]"</command>
 </build>
