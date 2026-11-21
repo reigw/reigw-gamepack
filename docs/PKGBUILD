@@ -1,0 +1,43 @@
+# Packages the Iron Grip: Warlord gamepack so NetRadiant-custom picks it up
+# from its system-wide gamepack directory.
+#
+# The package is built from the committed HEAD of the repository this
+# PKGBUILD lives in (uncommitted changes are not included).
+
+pkgname=reigw-gamepack-git
+pkgver=r3.5d76cb0
+pkgrel=1
+pkgdesc='Iron Grip: Warlord gamepack for NetRadiant-custom'
+arch=('any')
+url='https://github.com/reigw/reigw-gamepack'
+license=('LicenseRef-unknown')
+depends=('netradiant-custom')
+makedepends=('git')
+provides=('reigw-gamepack')
+conflicts=('reigw-gamepack')
+# Clone the enclosing local repository (one level above this PKGBUILD).
+source=("reigw-gamepack::git+file://$(realpath "${startdir}/..")")
+sha256sums=('SKIP')
+
+# Destination layout expected by NetRadiant-custom:
+#   gamepacks/games/<name>.game  - game description file
+#   gamepacks/<name>.game/       - game specific data (entities, build menu)
+_gamepacks=/opt/netradiant-custom/gamepacks
+
+pkgver() {
+  cd reigw-gamepack
+  # No release tags yet, so version by commit count and short hash.
+  printf 'r%s.%s' "$(git rev-list --count HEAD)" "$(git rev-parse --short=7 HEAD)"
+}
+
+package() {
+  cd reigw-gamepack
+
+  install -Dm644 -t "${pkgdir}${_gamepacks}/games" games/igw.game
+
+  # Install every file of the game data directory with sane permissions,
+  # preserving its relative directory structure.
+  find igw.game -type f -print0 | while IFS= read -r -d '' _file; do
+    install -Dm644 "${_file}" "${pkgdir}${_gamepacks}/${_file}"
+  done
+}
